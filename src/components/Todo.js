@@ -15,9 +15,12 @@ export default function Todo(props) {
 	// Ссылки для фокуса элементов при изменении состояния 
 	const editFieldRef = useRef(null);
 	const editButtonRef = useRef(null);
+	const editCheckboxRef = useRef(null)
 
 	// Для изменения состояния текущего рендеринга шаблона
 	const [isEditing, setEditing] = useState(false)
+
+	const [isChecked, setChecked] = useState(false)
 
 	// Для изменения названия задачи
 	const [newName, setNewName] = useState('')
@@ -45,7 +48,7 @@ export default function Todo(props) {
 					id={props.id}
 					className='todo-text'
 					type='text'
-					placeholder={'Новое название для ' + props.name}
+					placeholder={'Новое название для ' + props.name.trim()}
 					onChange={handleChange}
 					ref={editFieldRef}
 				/>
@@ -53,11 +56,9 @@ export default function Todo(props) {
 			<div className='btn-group'>
 				<button type='button' className='btn todo-cancel' onClick={() => setEditing(false)}>
 					Отмена
-					<span className='visually-hidden'>переименования {props.name}</span>
 				</button>
 				<button type='submit' className='btn btn__primary todo-edit'>
 					Сохранение
-					<span className='visually-hidden'>нового названия для {props.name}</span>
 				</button>
 			</div>
 		</form>
@@ -72,8 +73,15 @@ export default function Todo(props) {
 					type='checkbox'
 					defaultChecked={props.completed}
 					onChange={() => props.toggleTaskCompleted(props.id)}
+					onClick={() => {
+						setChecked(true)
+						props.changeStatus(props.id)
+						props.onClickChangeStatus(props.id)
+					}
+					}
+					ref={editCheckboxRef}
 				/>
-				<label className='todo-label' htmlFor={props.id}>
+				<label className='todo-label' htmlFor={props.id} >
 					{props.name}
 				</label>
 			</div>
@@ -105,7 +113,14 @@ export default function Todo(props) {
 		// Если поле редактировалось и не редактируется сейчас
 		if (wasEditing && !isEditing)
 			editButtonRef.current.focus()
-	}, [wasEditing, isEditing]) // Запуск только при изменении значения
+		if (!isEditing) {
+			props.changeStatus(props.id)
+			if (!props.checkLength(props.id, props.name))
+				props.editTask(props.id, props.name.trim().split('').splice(0, 48).concat(['.', '.', '.']).join(''))
+		}
+		// Проверка длины текстового содержимого задачи
+
+	}, [wasEditing, isEditing, isChecked]) // Запуск только при изменении значения
 
 	return (
 		<li className='todo stack-small'>{isEditing ? editingTemplate : viewTemplate}</li>

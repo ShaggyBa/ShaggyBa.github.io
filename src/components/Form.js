@@ -8,9 +8,13 @@ export default function Form(props) {
 	// Обработка формы для добавления задачи 
 	function handleSubmit(event) {
 		event.preventDefault()
+		console.log(event.target)
 		if (name.trim().length != 0)
-			// Передает вписанное в поле название задачи 
-			props.addTask(name)
+			if (name.trim().length >= 48)
+				props.addTask(name.trim().split('').splice(0, 48).concat(['.', '.', '.']).join(''))
+			else
+				// Передает вписанное в поле название задачи 
+				props.addTask(name)
 		setName('')
 	}
 

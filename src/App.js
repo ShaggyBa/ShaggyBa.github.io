@@ -8,24 +8,51 @@ import FILTER_MAP from './data/filter'
 // Значения фильтров 
 const FILTER_NAMES = Object.keys(FILTER_MAP)
 
+// Цветовой индикатор выполнения
+function changeStatus(id) {
+	if (document.getElementById(id).hasAttribute('checked'))
+		document.getElementById(id).nextSibling.style.color = 'green'
+	else
+		document.getElementById(id).nextSibling.style.color = 'blue'
+}
+
+function onClickChangeStatus(id) {
+	if (!document.getElementById(id).hasAttribute('checked'))
+		document.getElementById(id).nextSibling.style.color = 'green'
+	else
+		document.getElementById(id).nextSibling.style.color = 'blue'
+}
+
+function checkLength(id, name) {
+	if (document.getElementById(id).nextSibling.offsetWidth >= 330) {
+		return false
+	}
+	return true
+}
+
 export default function App(props) {
 	// Для добавления новых задач
 	const [tasks, setTasks] = useState(props.tasks)
 
 	const [filter, setFilter] = useState('Все')
 
-	// Динамическое создание компонентов Todo, включая заполнение переданными параметрами  
-	const taskList = tasks.filter(FILTER_MAP[filter]).map((task) =>
-		<Todo
-			// props
-			name={task.name}
-			id={task.id}
-			completed={task.completed}
-			key={task.id}
-			toggleTaskCompleted={toggleTaskCompleted}
-			deleteTask={deleteTask}
-			editTask={editTask}
-		/>)
+	// Динамическое создание компонентов Todo 
+	const taskList = tasks.filter(FILTER_MAP[filter]).map((task) => {
+		return (
+			<Todo
+				// props
+				name={task.name}
+				id={task.id}
+				completed={task.completed}
+				key={task.id}
+				toggleTaskCompleted={toggleTaskCompleted}
+				deleteTask={deleteTask}
+				editTask={editTask}
+				changeStatus={changeStatus}
+				checkLength={checkLength}
+				onClickChangeStatus={onClickChangeStatus}
+			/>)
+	})
 
 	// Создание компонентов FilterButton, включая заполнение их переданными параметрами фильтров
 	const filterList = FILTER_NAMES.map(name =>
@@ -84,27 +111,30 @@ export default function App(props) {
 
 	return (
 		<div className='todoapp stack-large'>
-			<h1>TodoMatic</h1>
-			<div className='menu--block'>
-				<Form addTask={addTask} />
+			<div className='menu'>
+				<h1>Todo-app</h1>
+				<div className='create--block'>
+					<Form addTask={addTask} />
 
-				<div className='filters btn-group stack-exception'>
-					{filterList}
+					<div className='filters btn-group stack-exception'>
+						{filterList}
+					</div>
+				</div>
+				<div className='list--block'>
+					<h2 id='list-heading'>
+						{headingText}
+					</h2>
+					<ul
+						role='list'
+						className='todo-list stack-large stack-exception'
+					>
+						{/* Передача динамически создаваемых компонентов */}
+						{taskList}
+
+					</ul>
 				</div>
 			</div>
-			<div className='list--block'>
-				<h2 id='list-heading'>
-					{headingText}
-				</h2>
-				<ul
-					role='list'
-					className='todo-list stack-large stack-exception'
-				>
-					{/* Передача динамически создаваемых компонентов */}
-					{taskList}
-
-				</ul>
-			</div>
+			<div className='edit'>aseaseaseaseaseaseaseaseaseaseaseaseaseaseaseaseasaseaseaseaseaseaseaseaseaseaseaseaseaseaseaseaseaseaseaseaseaseasaseaseaseaseaseasas</div>
 		</div>
 	)
 }
