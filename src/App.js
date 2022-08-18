@@ -1,5 +1,5 @@
 import { nanoid } from 'nanoid'
-import React, { useState } from 'react'
+import React, { useEffect, useState } from 'react'
 import Todo from './components/Todo'
 import Form from './components/Form'
 import FilterButton from './components/FilterButton'
@@ -8,26 +8,14 @@ import FILTER_MAP from './data/filter'
 // Значения фильтров 
 const FILTER_NAMES = Object.keys(FILTER_MAP)
 
-// Цветовой индикатор выполнения
-function changeStatus(id) {
-	if (document.getElementById(id).hasAttribute('checked'))
-		document.getElementById(id).nextSibling.style.color = 'green'
-	else
-		document.getElementById(id).nextSibling.style.color = 'blue'
-}
-
-function onClickChangeStatus(id) {
-	if (!document.getElementById(id).hasAttribute('checked'))
-		document.getElementById(id).nextSibling.style.color = 'green'
-	else
-		document.getElementById(id).nextSibling.style.color = 'blue'
-}
-
-function checkLength(id, name) {
-	if (document.getElementById(id).nextSibling.offsetWidth >= 330) {
-		return false
+// Отображение статуса задачи при рендере 
+function changeStatus(id, completed) {
+	if (completed === true) {
+		document.getElementById(id).style.background = 'green'
 	}
-	return true
+	else {
+		document.getElementById(id).style.background = 'none'
+	}
 }
 
 export default function App(props) {
@@ -36,7 +24,7 @@ export default function App(props) {
 
 	const [filter, setFilter] = useState('Все')
 
-	// Динамическое создание компонентов Todo 
+	// Динамическое создание компонентов Todo, с использованием фильтров 
 	const taskList = tasks.filter(FILTER_MAP[filter]).map((task) => {
 		return (
 			<Todo
@@ -49,8 +37,7 @@ export default function App(props) {
 				deleteTask={deleteTask}
 				editTask={editTask}
 				changeStatus={changeStatus}
-				checkLength={checkLength}
-				onClickChangeStatus={onClickChangeStatus}
+				getEditingTask={getEditingTask}
 			/>)
 	})
 
@@ -71,23 +58,24 @@ export default function App(props) {
 				? `${taskList.length} задача`
 				: `${taskList.length} задачи`
 
-
-	// Функция, получающая введенный в форме текст и создающая новый объект task
+	// Функция для добавления задачи
 	function addTask(name) {
 		const newTask = { id: 'todo-' + nanoid(), name: name, completed: false }
-		setTasks([...tasks, newTask])
+		setTasks([...tasks, newTask]) // Создание нового компонента
 	}
 
-	// Функция для удаления задачи, получающая id 
+	// Функция для удаления задачи
 	function deleteTask(id) {
 		const remainingTasks = tasks.filter(task => id !== task.id)
-		setTasks(remainingTasks)
+		setTasks(remainingTasks) // Удаление компонента из списка
 	}
 
+	// Функция для редактирования задачи
 	function editTask(id, newName) {
 		const editingTasks = tasks.map(task => {
 			if (id === task.id) {
-				return { ...tasks, name: newName, id }
+				document.getElementById(id).style.background = 'none'
+				return { ...tasks, name: newName, id, completed: false } //Возвращает список задач, включая измененную
 			}
 			return task
 		})
@@ -99,6 +87,12 @@ export default function App(props) {
 		const updatedTasks = tasks.map((task) => {
 			// Если текущая задача имеет тот же id, что и редактирумая 
 			if (id === task.id) {
+				if (task.completed === false) {
+					document.getElementById(id).style.background = 'green'
+				}
+				else {
+					document.getElementById(id).style.background = 'none'
+				}
 				// используется object spread для создания копии этого объекта
 				// у которого свойство `completed` будет инверсировано
 				return { ...task, completed: !task.completed }
@@ -109,19 +103,72 @@ export default function App(props) {
 		setTasks(updatedTasks)
 	}
 
+	//! РЕДАКТИРОВАНИЕ ЗАДАЧИ 
+	// Состояния редактирования задачи
+	const [isEditing, setEditing] = useState(false)
+	const [newName, setNewName] = useState('')
+	const [editingProps, setEditingProps] = useState({})
+
+	// Получение свойств компонента выбранной задачи
+	function getEditingTask(taskProps) {
+		setEditing(true)
+		setEditingProps(taskProps)
+	}
+
+	function handleChange(event) {
+		setNewName(event.target.value)
+	}
+
+	// Для изменения названия задачи при нажатии на кнопку
+	function handleSubmit(event) {
+		event.preventDefault()
+		disabledDeleteButton(!isEditing)
+		if (newName.trim().length > 0) {
+			editingProps.editTask(editingProps.id, newName)
+			setNewName('')
+		}
+		setEditing(false)
+	}
+
+	function disabledDeleteButton(isEditing) {
+		const deleteButton = document.querySelector(`#${editingProps.id}`).parentNode.nextSibling.querySelector('.btn__danger')
+		if (isEditing) {
+			deleteButton.setAttribute('disabled', 'disabled')
+			deleteButton.style.background = 'gray'
+			deleteButton.style.borderColor = '#000'
+		}
+		else {
+			deleteButton.removeAttribute('disabled')
+			deleteButton.style.background = '#ca3c3c'
+			deleteButton.style.borderColor = '#bd2130'
+
+		}
+	}
+
+	// Проверяет, редактировалось ли поле до текущего клика
+	useEffect(() => {
+		if (isEditing)
+			disabledDeleteButton(isEditing)
+	}, [isEditing]) // Запуск только при изменении значения
+
+	//! КОНЕЦ РЕДАКТИРОВАНИЕ ЗАДАЧИ 
+
 	return (
 		<div className='todoapp stack-large'>
 			<div className='menu'>
 				<h1>Todo-app</h1>
 				<div className='create--block'>
+					{/* Форма для добавления задач */}
 					<Form addTask={addTask} />
 
 					<div className='filters btn-group stack-exception'>
+						{/* Фильтры задач */}
 						{filterList}
 					</div>
 				</div>
 				<div className='list--block'>
 					<h2 id='list-heading'>
+						{/* Заголовок задач */}
 						{headingText}
 					</h2>
 					<ul
@@ -134,7 +181,37 @@ export default function App(props) {
 					</ul>
 				</div>
 			</div>
-			<div className='edit'>aseaseaseaseaseaseaseaseaseaseaseaseaseaseaseaseasaseaseaseaseaseaseaseaseaseaseaseaseaseaseaseaseaseaseaseaseaseasaseaseaseaseaseasas</div>
+			{/* Редактирование задач */}
+			<div className='edit'>
+				{isEditing
+					? <form className='stack-small'
+						onSubmit={handleSubmit}>
+						<div className='form-group'>
+							<input
+								id={editingProps.id}
+								className='todo-text'
+								type='text'
+								placeholder={'Новое название для ' + editingProps.name}
+								onChange={handleChange}
+							/>
+						</div>
+						<div className='btn-group'>
+							<button type='button' className='btn todo-cancel'
+								onClick={() => {
+									disabledDeleteButton(!isEditing)
+									setEditing(false)
+								}
+								}
+							>
+								Отмена
+							</button>
+							<button type='submit' className='btn btn__primary todo-edit'>
+								Сохранение
+							</button>
+						</div>
+					</form>
+					: <h1>Задача не выбрана</h1>}
+			</div>
 		</div>
 	)
 }

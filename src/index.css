@@ -33,7 +33,6 @@ button {
 	overflow: visible;
 	background: transparent;
 	line-height: normal;
-
 }
 
 button,
@@ -92,6 +91,7 @@ body {
 }
 
 .menu {
+	min-width: 40rem;
 	max-width: 50rem;
 	border-radius: 5px;
 	padding: 1.5rem;
@@ -99,7 +99,8 @@ body {
 }
 
 .edit {
-	min-width: 60rem;
+	min-width: 40rem;
+	width: 100%;
 	max-width: 65rem;
 	padding: 2.5rem 1.5rem 0 1.5rem;
 	border: 2px solid #4d4d4d;
@@ -266,7 +267,6 @@ body {
 	margin: unset auto;
 }
 
-
 /* Todo стили */
 .todo {
 	display: flex;
@@ -296,67 +296,36 @@ body {
 	font-weight: 400;
 	font-size: 1.6rem;
 	line-height: 1.25;
-	display: block;
+	display: flex;
 	position: relative;
 	min-height: 44px;
-	padding-left: 40px;
+	padding-left: 5px;
 }
 
-.c-cb>label::before,
-.c-cb>input[type="checkbox"] {
-	box-sizing: border-box;
-	top: 2px;
-	left: 2px;
-	width: 35px;
-	height: 35px;
-	border-radius: 50%;
-
-}
-
-.c-cb>input[type="checkbox"] {
-	-webkit-font-smoothing: antialiased;
+.todo-checkbox {
 	cursor: pointer;
-	position: absolute;
-	z-index: 2;
-	margin: 0;
-	opacity: 0;
+	width: 30px;
+	height: 30px;
+	border: 1px solid rgba(26, 209, 96, 0.555);
+	border-radius: 50%;
+	display: block;
+	flex-shrink: 0;
 }
 
 .c-cb>label {
 	font-size: inherit;
 	font-family: inherit;
 	line-height: inherit;
-	display: inline-block;
+	display: -webkit-box;
 	margin-bottom: 0;
 	padding: 8px 15px 5px;
 	color: blue;
-	cursor: pointer;
 	white-space: nowrap;
 }
 
-.c-cb>label::before {
-	content: "";
-	position: absolute;
-	border: 2px solid currentcolor;
-	background: transparent;
-}
-
-.c-cb>label::after {
-	box-sizing: content-box;
-	content: "";
-	position: absolute;
-	top: 12px;
-	left: 10px;
-	width: 14px;
-	height: 6px;
-	transform: rotate(-45deg);
-	border: solid;
-	border-width: 0 0 3px 3px;
-	border-top-color: transparent;
-	opacity: 0;
-	background: transparent;
-}
-
-.c-cb>input[type="checkbox"]:checked+label::after {
-	opacity: 1;
+.todo-label p {
+	max-width: 400px;
+	text-overflow: ellipsis;
+	margin: 0;
+	overflow-x: hidden;
 }
