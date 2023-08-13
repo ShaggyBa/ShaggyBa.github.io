@@ -3,20 +3,21 @@ import React, { useState } from 'react'
 export default function Form(props) {
 
 	// Хук, следящий за вводимым значением и позволяющий изменять его
-	const [name, setName] = useState('')
+	const [taskName, setTaskName] = useState('')
 
 	// Обработка формы для добавления задачи 
 	function handleSubmit(event) {
 		event.preventDefault()
 
-		if (document.getElementById('new-todo-input').value.trim().length > 0)
+		if (taskName.length > 0)
 			// Передает вписанное в поле название задачи 
-			props.addTask(name)
-		setName('')
+			props.addTask(taskName)
+
+		setTaskName('')
 	}
 
 	function handleChange(event) {
-		setName(event.target.value)
+		setTaskName(event.target.value)
 	}
 
 	return (
@@ -32,9 +33,9 @@ export default function Form(props) {
 				className='input input__lg'
 				name='text'
 				autoComplete='off'
-				value={name}
+				value={taskName}
 				onChange={handleChange}
-				maxLength="100"
+				maxLength='100'
 			/>
 			<button type='submit' className='btn btn__primary btn__lg'>
 				Добавить

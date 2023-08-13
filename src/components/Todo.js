@@ -35,7 +35,7 @@ export default function Todo(props) {
 
 	useEffect(() => {
 		props.changeStatus(props.id, props.completed)
-	}, [])
+	}, [props.id, props.completed])
 	return (
 		<li className='todo stack-small'>{viewTemplate}</li>
 	)
