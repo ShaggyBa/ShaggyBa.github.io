@@ -1,11 +1,9 @@
 import { nanoid } from 'nanoid'
 import React, { useEffect, useState } from 'react'
-import Todo from './components/Todo'
 import Form from './components/Form'
-import FilterButton from './components/FilterButton'
-import FILTER_MAP from './data/filters/filter'
 
-const FILTER_NAMES = Object.keys(FILTER_MAP)
+import { FilterList } from './components/FilterList'
+import { TaskList } from './components/TaskList'
 
 function changeStatus(id, completed) {
 	const element = document.getElementById(id)
@@ -17,39 +15,12 @@ function changeStatus(id, completed) {
 }
 
 export default function App(props) {
+
 	const [tasks, setTasks] = useState(props.tasks)
 	const [filter, setFilter] = useState('Все')
 	const [isEditing, setEditing] = useState(false)
 	const [newName, setNewName] = useState('')
 	const [editingProps, setEditingProps] = useState({})
-
-	const taskList = tasks.filter(FILTER_MAP[filter]).map((task) => (
-		<Todo
-			name={task.name}
-			id={task.id}
-			completed={task.completed}
-			key={task.id}
-			toggleTaskCompleted={toggleTaskCompleted}
-			deleteTask={deleteTask}
-			editTask={editTask}
-			changeStatus={changeStatus}
-			getEditingTask={getEditingTask}
-		/>
-	))
-
-	const filterList = FILTER_NAMES.map((name) => (
-		<FilterButton
-			name={name}
-			key={name}
-			isPressed={name === filter}
-			setFilter={setFilter}
-		/>
-	))
-
-	const headingText =
-		taskList.length === 1
-			? `${taskList.length} задача`
-			: `${taskList.length} задач`
 
 	function addTask(name) {
 		const newTask = { id: 'todo-' + nanoid(), name: name, completed: false }
@@ -120,24 +91,38 @@ export default function App(props) {
 	useEffect(() => {
 		if (isEditing)
 			disabledDeleteButton()
-	}, [isEditing])§
+	}, [isEditing])
 
 	return (
 		<div className="todoapp stack-large">
 			<div className="menu">
 				<h1>Todo-app</h1>
 				<div className="create--block">
-					<Form addTask={addTask} />
-					<div className="filters btn-group stack-exception">
-						{filterList}
-					</div>
+
+					<Form
+						addTask={addTask}
+
+					/>
+
+					<FilterList
+						filter={filter}
+						setFilter={setFilter}
+					/>
+
 				</div>
-				<div className="list--block">
-					<h2 id="list-heading">{headingText}</h2>
-					<ul role="list" className="todo-list stack-large stack-exception">
-						{taskList}
-					</ul>
-				</div>
+
+				<TaskList
+					tasks={tasks}
+					filter={filter}
+					actions={{
+						toggleTaskCompleted,
+						deleteTask,
+						editTask,
+						changeStatus,
+						getEditingTask
+					}}
+				/>
+
 			</div>
 			<div className="edit">
 				{isEditing ? (
